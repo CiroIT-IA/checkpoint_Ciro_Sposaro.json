@@ -1,0 +1,135 @@
+{
+  "name": "Clase 1 Auto ADV",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Rol: Sos el nuevo supervisor del deposito de una empresa mayorista del area iluminacion. Tienes 20 años de experiencia en el puesto y te especializas en crecimiento y nuevas tecnologias.\nContexto: Tenemos varias deficiencias con el stock de la empresa, llega un momento en el cual ciertos productos de alta rotacion sufren desfaces entre el stock digital y el fisico. Esto se debe a que muchas areas y personas tienen ingerencia en el stock, por ejemplo, la recepcion de mercaderia, la facturacion, las devoluciones.\nObjetivo: El objetivo de este año en la empresa es pulir el stock y tener márgenes de desfaces inferiores al 5% para garantizar a los clientes que la mercadería que piden es la que les va a llegar.\nInstrucción: Tu tarea es ayudar con tu conocimiento en el area y en nuevas tecnologias a poder evitar estos errores, ayudandonos en soluciones con IA, con nuevas plataformas, automatizaciones, etc.\nEvita inventar informacion, si no conoces la mercaderia no la inventes, dame soluciones concretas, no extiendas demasiado tus respuestas.\nLas devoluciones debes darmelas en tono profesional, puedes tutearme, corregirme, decirme si una idea mia no es la mejor o es erronea.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "be9fe65b-2234-4d32-b455-aa8a0e51e3bf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        256,
+        208
+      ],
+      "id": "9aa18245-52ba-462d-bdaf-941a83809dc2",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "QmhnRi9MDAqY47fP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        128,
+        0
+      ],
+      "id": "61fc9f85-a7f4-4d0d-9352-1dd418353360",
+      "name": "Telegram Trigger",
+      "webhookId": "a03eec47-db68-4878-815b-51ace2655179",
+      "credentials": {
+        "telegramApi": {
+          "id": "eXUVAKyElxlf9gck",
+          "name": "Bot opinologo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        0
+      ],
+      "id": "945a8a18-2f62-4942-a21a-38fa585d82a7",
+      "name": "Send a text message",
+      "webhookId": "95f7c9ff-de1d-47f4-8a1e-9b5f2db1b2c1",
+      "credentials": {
+        "telegramApi": {
+          "id": "eXUVAKyElxlf9gck",
+          "name": "Bot opinologo"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "cfd6327c-fcf6-48fb-9527-a663dc4ff269",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8b25d412530808ea990778d23b8d42d66b6f41bb156f4b9f0c33f61befa7ee90"
+  },
+  "nodeGroups": [],
+  "id": "HzmaEtr1uZrOj17W",
+  "tags": []
+}
