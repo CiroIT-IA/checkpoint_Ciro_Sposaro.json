@@ -4,8 +4,11 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "Rol: Sos el nuevo supervisor del deposito de una empresa mayorista del area iluminacion. Tienes 20 años de experiencia en el puesto y te especializas en crecimiento y nuevas tecnologias.\nContexto: Tenemos varias deficiencias con el stock de la empresa, llega un momento en el cual ciertos productos de alta rotacion sufren desfaces entre el stock digital y el fisico. Esto se debe a que muchas areas y personas tienen ingerencia en el stock, por ejemplo, la recepcion de mercaderia, la facturacion, las devoluciones.\nObjetivo: El objetivo de este año en la empresa es pulir el stock y tener márgenes de desfaces inferiores al 5% para garantizar a los clientes que la mercadería que piden es la que les va a llegar.\nInstrucción: Tu tarea es ayudar con tu conocimiento en el area y en nuevas tecnologias a poder evitar estos errores, ayudandonos en soluciones con IA, con nuevas plataformas, automatizaciones, etc.\nEvita inventar informacion, si no conoces la mercaderia no la inventes, dame soluciones concretas, no extiendas demasiado tus respuestas.\nLas devoluciones debes darmelas en tono profesional, puedes tutearme, corregirme, decirme si una idea mia no es la mejor o es erronea.",
-        "options": {}
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "[ROL]\nEres un asistente administrativo experto en la gestión de control y auditoría de inventarios para empresas mayoristas, operando de manera autónoma a través de canales de mensajería.\n\n[ÁMBITO]\nTu dominio exclusivo de trabajo es la información contenida en la planilla de Google Sheets conectada como herramienta (\"Planilla ventas\"). Tu alcance se limita estrictamente a consultar filas, columnas, registros de pedidos, fechas, productos y montos totales.\n\n[OBJETIVO]\nMantener informado al usuario de manera precisa, clara y directa sobre la cantidad de pedidos realizados, las fechas de ejecución, los productos vendidos y el importe de los mismos, procesando las consultas numéricas y métricas solicitadas en tiempo real.\n\n[REGLAS Y ESCALAMIENTO]\n1. Restricción de fuentes: Debes leer y responder unicamente utilizando los datos extraídos de la planilla de Google Sheets. \n2. Prohibición de alucinaciones: Está terminantemente prohibido inventar, suponer o extrapolar información que no esté explícitamente registrada en el archivo.\n3. Protocolo de escalamiento: Si te realizan una pregunta o consulta que no puede ser respondida, verificada o calculada con los datos actuales del Sheets, debes responder textualmente y sin excepciones: \"No es posible contestar a esa pregunta con la información disponible en el registro.\"\n4. Tono y formato: Mantén un estilo profesional, objetivo y conciso. Excluye por completo el uso de lenguaje inclusivo o giros informales innecesarios.",
+          "maxIterations": 5
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
@@ -18,8 +21,11 @@
     },
     {
       "parameters": {
-        "model": "openai/gpt-oss-safeguard-20b",
-        "options": {}
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 5000,
+          "temperature": 0.3
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
@@ -80,6 +86,79 @@
           "name": "Bot opinologo"
         }
       }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        400,
+        208
+      ],
+      "id": "155f3d9e-6109-47eb-995e-b457a314e107",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilizar esta herramienta de manera autónoma cada vez que el usuario consulte datos de ventas, cantidad de pedidos, montos totales o fechas de registros en la planilla",
+        "documentId": {
+          "__rl": true,
+          "value": "1woV_3yy-Ncf-omTMk1VclvwHXlcXAOsNrvkQ3mxDZu4",
+          "mode": "list",
+          "cachedResultName": "Ventas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1woV_3yy-Ncf-omTMk1VclvwHXlcXAOsNrvkQ3mxDZu4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1woV_3yy-Ncf-omTMk1VclvwHXlcXAOsNrvkQ3mxDZu4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        544,
+        208
+      ],
+      "id": "c3a2023a-2d6d-498d-a446-e4bb7aaa5815",
+      "name": "Planilla ventas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cNU3R8G46ODwcN8m",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ciroitia@gmail.com",
+        "subject": "Informe observabilidad",
+        "message": "=Se ha registrado una nueva ejecución del Agente Autónomo en n8n.  --- Detalles de la Traza --- • Mensaje recibido del usuario (Telegram):  {{ $('Telegram Trigger').item.json.message.text }}  • Respuesta generada por el Agente:  {{ $('AI Agent').item.json.output }}  • ID del Chat de Sesión:  {{ $('Telegram Trigger').item.json.message.chat.id }}  Estado del sistema: Ejecutado correctamente con auditoría activa.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "91419e10-8cab-48c4-95ef-7f256ec7c019",
+      "name": "Send a message",
+      "webhookId": "810746e9-70cb-4cad-a425-d7dcea2b5f86",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "pAB4XtR85byoJRpB",
+          "name": "Gmail account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -116,6 +195,39 @@
           }
         ]
       ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Planilla ventas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -124,7 +236,7 @@
     "binaryMode": "separate",
     "availableInMCP": true
   },
-  "versionId": "cfd6327c-fcf6-48fb-9527-a663dc4ff269",
+  "versionId": "da8f3980-9cd8-447c-873b-5b9940914c16",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8b25d412530808ea990778d23b8d42d66b6f41bb156f4b9f0c33f61befa7ee90"
