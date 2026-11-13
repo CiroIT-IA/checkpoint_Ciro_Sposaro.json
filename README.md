@@ -1,0 +1,520 @@
+{
+  "name": "Clase 4",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -640,
+        -160
+      ],
+      "id": "29e8c5dc-3531-4668-9875-3a8f7d72774b",
+      "name": "Gmail Trigger1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yh48yaIqdLKTd92m",
+          "name": "Ciro IA"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -272
+      ],
+      "id": "4007abe4-e0ab-4679-8029-11e888252129",
+      "name": "Ignorar1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "search",
+        "limit": 1,
+        "filterGroupsUi": {
+          "filterGroupsValues": [
+            {
+              "filtersUi": {
+                "filterValues": [
+                  {
+                    "propertyName": "email|string",
+                    "value": "={{ $('Limpieza datos').item.json.correo }}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.3,
+      "position": [
+        352,
+        -80
+      ],
+      "id": "370f7715-e145-4c93-8d2d-5b023799aaea",
+      "name": "Search contacts",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "5vQ2eI6fKCTjOI95",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        128
+      ],
+      "id": "87014c0f-032c-42c2-91ab-ea7b3386675b",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "QmhnRi9MDAqY47fP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "7f98a3ed-c343-4dd9-89fc-e0720a310c67",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        560,
+        -80
+      ],
+      "id": "7076f016-7434-437c-86a0-8f1debabea0e",
+      "name": "Cliente-existente"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('Limpieza datos').item.json.correo }}",
+        "additionalFields": {
+          "leadStatus": "CONNECTED"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        -160
+      ],
+      "id": "f4719e5f-503b-43fe-90f1-27f3b081c048",
+      "name": "Actualizar",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "5vQ2eI6fKCTjOI95",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('Limpieza datos').item.json.correo }}",
+        "additionalFields": {
+          "leadStatus": "NEW"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        32
+      ],
+      "id": "0493b890-896a-4c56-bdf6-2d956b158855",
+      "name": "Crear",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "5vQ2eI6fKCTjOI95",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BSCB2B138",
+          "mode": "list",
+          "cachedResultName": "nuevo-canal"
+        },
+        "text": "=Resumen: {{ $json.output.slack_summary[0] }}\nmail del lead:{{ $('Limpieza datos').item.json.Texto }}\nnombre del lead: {{ $('Limpieza datos').item.json.nombre }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        352,
+        336
+      ],
+      "id": "7d414d0c-e2cc-4c54-8bdd-46fa5ba81c8e",
+      "name": "Send a message",
+      "webhookId": "f204b787-7cd6-4f5c-af6f-4d2693c40b78",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "AeBQDcoqooXsmK9L",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"draft_subject\": \"asunto del mail\",\n\t\"draft_body\": [\"cuerpo del mail a enviar\"],\n    \"slack_summary\": [\"resumen para el equipo de slack\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        128
+      ],
+      "id": "61f924bc-81fe-4b15-bfc9-1ae572c88242",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.output.draft_subject }}",
+        "message": "={{ $json.output.draft_body }}",
+        "options": {
+          "sendTo": "={{ $('Limpieza datos').item.json.correo }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        144
+      ],
+      "id": "bee3fdbf-5afa-4cfe-b529-2645af80febc",
+      "name": "Borrador",
+      "webhookId": "816a4baf-3433-48f5-83af-60b886b98421",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yh48yaIqdLKTd92m",
+          "name": "Ciro IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Procesá el siguiente correo de soporte de nuestra tienda online, y generá un texto para responder al usuario\n\nREMITENTE:\n\n{{ $json.correo }}\n\nEmail\n\nASUNTO:\n\n{{ $json.Asunto }}\n\nMENSAJE:\n\n{{ $json.Texto }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=## OBJETIVO\n\nAnalizá el correo recibido y prepará una respuesta profesional que quedará guardada como BORRADOR en Gmail para revisión humana.\n\n## REGLAS\n\n1. No envíes mensajes directamente.\n\n2 No inventes informacion sobre pedidos, pagos o productos.\n\n3. No confirmes reembolsos ni acciones que no hayan ocurrido.\n\n4. Redacta una respuesta breve, clara y profesional.\n\n5. El draft_subject debe ser un asunto apropiado para responder al cliente.\n\n6. El draft body debe contener la respuesta completa.\n\n7- slack_summary debe resumir el caso en una o dos frases.\n\n8. Si podés inferir claramente nombre y apellido del remitente, incluilos, De lo contrario devolvé cadena vacía.\n\n9. La salida debe respetar exactamente el formato solicitado."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "34115f18-19da-4890-9471-eafc8f95c281",
+      "name": "Asistente tienda"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6edca087-dc5b-4a69-9368-79f399aeb21c",
+              "name": "Texto",
+              "value": "={{ $('Gmail Trigger1').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "ee45d8f6-063f-4fad-90da-c49b9ff64456",
+              "name": "Asunto",
+              "value": "={{ $('Gmail Trigger1').item.json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "7ab096bf-24b5-425e-ab51-c6a2b2a2c814",
+              "name": "correo",
+              "value": "={{ $json.from.value[0].address }}",
+              "type": "string"
+            },
+            {
+              "id": "dc58bb44-d1d2-4838-8462-092c47de7270",
+              "name": "nombre",
+              "value": "={{ $json.from.value[0].name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -208,
+        -144
+      ],
+      "id": "7eb7ba98-0798-4933-8bf4-fcbe3caec3c1",
+      "name": "Limpieza datos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "c89272f7-55b8-4531-b7c5-cd4a90ef61be",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "noreply",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "9aff3f02-e829-4f99-b228-cc306408107c",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "no-reply",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "d432d4da-7a7a-4490-9db2-a2ce1290f42a",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "no-reply",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "8897562e-183a-4b6e-80a1-c2268b9b53c7",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "77281549-bd05-4869-b96d-c4d3bb3705f7",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Undeliverable ",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c9a25ad8-d20b-4b91-905a-17f56f6c336e",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Auto-reply",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -448,
+        -160
+      ],
+      "id": "feb387f7-d585-4d0a-88e9-f7b94aa0346d",
+      "name": "Filtro-antispam"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Filtro-antispam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search contacts": {
+      "main": [
+        [
+          {
+            "node": "Cliente-existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Asistente tienda",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cliente-existente": {
+      "main": [
+        [
+          {
+            "node": "Actualizar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Asistente tienda",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Asistente tienda": {
+      "main": [
+        [
+          {
+            "node": "Search contacts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Borrador",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpieza datos": {
+      "main": [
+        [
+          {
+            "node": "Asistente tienda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro-antispam": {
+      "main": [
+        [
+          {
+            "node": "Ignorar1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limpieza datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "9f2cbb51-56b0-40b2-96d1-7b45d54aa433",
+  "meta": {
+    "instanceId": "8b25d412530808ea990778d23b8d42d66b6f41bb156f4b9f0c33f61befa7ee90"
+  },
+  "nodeGroups": [],
+  "id": "YK6eJrQUAjEYmi7i",
+  "tags": []
+}
